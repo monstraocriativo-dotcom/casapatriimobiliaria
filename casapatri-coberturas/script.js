@@ -81,14 +81,20 @@ let targetProgress = 0;
 let animatedProgress = 0;
 let readyToSeek = false;
 let frameScheduled = false;
+let isSeeking = false;
 
 function scrubVideo(progress, force = false) {
-  if (!readyToSeek || reducedMotion.matches || constructionVideo.seeking) return;
+  if (!readyToSeek || reducedMotion.matches || constructionVideo.seeking || isSeeking) return;
   const duration = constructionVideo.duration;
   if (!Number.isFinite(duration) || duration <= 0) return;
   const time = clamp(progress) * Math.max(0, duration - 0.07);
-  if (force || Math.abs(constructionVideo.currentTime - time) > 0.07) {
-    try { constructionVideo.currentTime = time; } catch (_) { /* usa poster */ }
+  if (force || Math.abs(constructionVideo.currentTime - time) > 0.08) {
+    try {
+      isSeeking = true;
+      constructionVideo.currentTime = time;
+    } catch (_) {
+      isSeeking = false;
+    }
   }
 }
 function prepareVideo() {
@@ -100,7 +106,7 @@ function prepareVideo() {
 constructionVideo.addEventListener('loadedmetadata', prepareVideo);
 if (constructionVideo.readyState >= HTMLMediaElement.HAVE_METADATA) prepareVideo();
 constructionVideo.addEventListener('seeked', () => {
-  if (Math.abs(constructionVideo.currentTime - targetProgress * (constructionVideo.duration || 1)) > 0.12) scheduleFrame();
+  isSeeking = false;
 });
 constructionVideo.addEventListener('error', () => cinematic.classList.add('cinematic--still'));
 
@@ -163,8 +169,11 @@ chapterButtons.forEach((button, index) => {
   });
 });
 
-// Efeitos de entrada (com fallback visível sem IntersectionObserver)
-if ('IntersectionObserver' in window && !reducedMotion.matches) {
+// Efeitos de entrada (revelação imediata no mobile para evitar telas em branco ou embaçadas)
+const isMobileDevice = window.innerWidth <= 768;
+if (isMobileDevice) {
+  $$('.reveal').forEach(el => el.classList.add('is-revealed'));
+} else if ('IntersectionObserver' in window && !reducedMotion.matches) {
   const observer = new IntersectionObserver((entries, io) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -172,7 +181,7 @@ if ('IntersectionObserver' in window && !reducedMotion.matches) {
         io.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  }, { threshold: 0.01, rootMargin: '100px 0px 100px 0px' });
   $$('.reveal').forEach(el => observer.observe(el));
 } else {
   $$('.reveal').forEach(el => el.classList.add('is-revealed'));

@@ -93,6 +93,8 @@ let smoothedProgress = 0;
 let ticking = false;
 let canScrub = false;
 
+let isSeeking = false;
+
 // Robust even when preload finishes before the deferred JS executes.
 function initializeTimelapse() {
   if (!Number.isFinite(constructionVideo.duration) || constructionVideo.duration <= 0) return;
@@ -103,21 +105,24 @@ function initializeTimelapse() {
 constructionVideo.addEventListener('loadedmetadata', initializeTimelapse);
 if (constructionVideo.readyState >= HTMLMediaElement.HAVE_METADATA) initializeTimelapse();
 constructionVideo.addEventListener('seeked', () => {
-  if (Math.abs(constructionVideo.currentTime - wantedProgress * (constructionVideo.duration || 1)) > 0.13) {
-    queueFrame();
-  }
+  isSeeking = false;
 });
 constructionVideo.addEventListener('error', () => {
   cinematic.classList.add('cinematic--still');
 });
 
 function seekVideo(progress, force = false) {
-  if (!canScrub || reducedMotion.matches || constructionVideo.seeking) return;
+  if (!canScrub || reducedMotion.matches || constructionVideo.seeking || isSeeking) return;
   const duration = constructionVideo.duration;
   if (!duration || !Number.isFinite(duration)) return;
   const targetTime = clamp(progress) * Math.max(0, duration - 0.045);
-  if (force || Math.abs(constructionVideo.currentTime - targetTime) > 0.065) {
-    try { constructionVideo.currentTime = targetTime; } catch (_) { /* poster remains visible */ }
+  if (force || Math.abs(constructionVideo.currentTime - targetTime) > 0.08) {
+    try {
+      isSeeking = true;
+      constructionVideo.currentTime = targetTime;
+    } catch (_) {
+      isSeeking = false;
+    }
   }
 }
 
@@ -187,10 +192,13 @@ chapterButtons.forEach((button, index) => {
 });
 
 // --------------------------------------------------------
-// AIDA supporting content: optical blur / translate reveal.
-// Only activated once elements are near the viewport.
+// Content reveal: optical blur / translate reveal.
+// Immediately reveal on mobile to avoid unrendered or blurry states.
 // --------------------------------------------------------
-if ('IntersectionObserver' in window && !reducedMotion.matches) {
+const isMobileDevice = window.innerWidth <= 768;
+if (isMobileDevice) {
+  $$('.reveal').forEach((el) => el.classList.add('is-revealed'));
+} else if ('IntersectionObserver' in window && !reducedMotion.matches) {
   const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -198,7 +206,7 @@ if ('IntersectionObserver' in window && !reducedMotion.matches) {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -45px 0px' });
+  }, { threshold: 0.01, rootMargin: '100px 0px 100px 0px' });
   $$('.reveal').forEach((el) => revealObserver.observe(el));
 } else {
   $$('.reveal').forEach((el) => el.classList.add('is-revealed'));
