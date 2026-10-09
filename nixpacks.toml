@@ -1,0 +1,2 @@
+# Configuração do Nixpacks para o Coolify
+providers = ["staticfile"]
