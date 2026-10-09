@@ -34,7 +34,10 @@ img,svg,video{display:block;max-width:100%}
 /* NAV */
 .site-header{height:88px;position:fixed;left:0;top:0;right:0;z-index:90;display:flex;align-items:center;justify-content:space-between;gap:30px;padding:0 max(32px,5.6vw);background:linear-gradient(180deg,rgba(3,20,27,.79),rgba(5,23,30,.25));border-bottom:1px solid rgba(255,255,255,.13);color:white;transition:height .35s,background .35s,box-shadow .35s}
 .site-header.is-scrolled{height:74px;background:rgba(8,27,35,.89);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 8px 32px rgba(0,0,0,.09)}
-.brand{display:flex;flex-flow:column;align-items:flex-start;min-width:182px;line-height:1;color:#fff}
+.brand{display:flex;align-items:center;line-height:1;color:#fff}
+.brand__logo{display:block;height:40px;width:auto;max-width:180px;object-fit:contain;transition:height .3s,opacity .2s}
+.brand:hover .brand__logo{opacity:.85}
+.site-header.is-scrolled .brand__logo{height:34px}
 .brand__label{font-size:8px;letter-spacing:.48em;font-weight:650;padding-left:2px;opacity:.74;margin-bottom:6px}
 .brand__wordmark{font:800 22px/.88 var(--display);letter-spacing:-.095em;white-space:nowrap}
 .brand__stroke{font-weight:400;letter-spacing:-.095em;margin-left:6px}
@@ -227,9 +230,12 @@ img,svg,video{display:block;max-width:100%}
 .site-footer{background:#071a22;color:#edf2f1;padding:69px 0 30px}
 .site-footer__top{display:grid;grid-template-columns:2fr 1fr 1.2fr;gap:70px;padding-bottom:87px}
 .footer-brand{display:flex;flex-direction:column;align-items:flex-start}
+.footer-brand__link{display:inline-block;transition:opacity .2s ease}
+.footer-brand__link:hover{opacity:.85}
+.footer-brand__logo{display:block;height:46px;width:auto;max-width:210px;object-fit:contain}
 .footer-brand .brand__wordmark{font-size:35px}
 .footer-brand .brand__label{font-size:9px}
-.footer-brand>span:last-child{font:500 9px var(--sans);letter-spacing:.2em;color:#80959c;margin-top:22px}
+.footer-brand>span:last-child{font:500 9px var(--sans);letter-spacing:.2em;color:#80959c;margin-top:18px}
 .footer-links,.footer-contact{display:flex;flex-direction:column;gap:9px;align-items:flex-start;font-size:13px;color:#b3c4c6}
 .footer-links a:hover,.footer-contact a:hover{color:var(--gold-bright)}
 .footer-contact>span{font-size:9px;letter-spacing:.18em;font-weight:700;color:var(--gold-bright);margin-bottom:10px}
@@ -530,6 +536,8 @@ img,svg,video{display:block;max-width:100%}
   }
 }
 @media(max-width:650px){
+  .brand__logo{height:30px;max-width:130px}
+  .footer-brand__logo{height:38px;max-width:165px}
   .brand--casapatri .brand__wordmark{font-size:18px;letter-spacing:-.04em}
   .brand--casapatri .brand__emblem{width:26px;height:26px;font-size:13px;margin-right:5px}
   .brand--casapatri .brand__label{font-size:6.5px;letter-spacing:.3em}
